@@ -58,6 +58,8 @@ def main():
                             labels=["On time or early", "1-3 days late", "4-7 days late",
                                     "8-14 days late", "15+ days late"]),
     ).drop(columns="purchase_timestamp").astype({"days_late": "Int64", "is_late": "Int64"})
+    # Power BI sorts text alphabetically; "Sort by column" on this keeps the buckets in order.
+    fact["delay_bucket_order"] = fact.delay_bucket.cat.codes.replace(-1, pd.NA).astype("Int64") + 1
 
     customers = pd.read_sql_query("""
         SELECT customer_unique_id, MIN(customer_city) AS customer_city, MIN(customer_state) AS customer_state

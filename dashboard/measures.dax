@@ -1,0 +1,65 @@
+// Olist dashboard measures.
+// In Power BI Desktop: Home > Enter data > name the table "_Measures" > Load.
+// Then select _Measures, choose "New measure" and paste each block below (one measure per paste).
+// Expected values with no filters are in the comments; use them to check the model.
+
+Total Revenue =
+    SUM ( orders_fact[revenue] )
+    // R$15,373,120
+
+Orders =
+    COUNTROWS ( orders_fact )
+    // 96,211
+
+Avg Order Value =
+    DIVIDE ( [Total Revenue], [Orders] )
+    // R$159.79
+
+Late Delivery % =
+    // Orders with no delivery date (8) have a blank is_late and are left out of both counts.
+    DIVIDE (
+        CALCULATE ( COUNTROWS ( orders_fact ), orders_fact[is_late] = 1 ),
+        CALCULATE ( COUNTROWS ( orders_fact ), NOT ISBLANK ( orders_fact[is_late] ) )
+    )
+    // 6.79%
+
+Avg Review Score =
+    AVERAGE ( orders_fact[review_score] )
+    // 4.16
+
+Repeat Customer % =
+    // Share of customers in the current filter context with more than one order.
+    VAR CustomerOrders =
+        ADDCOLUMNS (
+            VALUES ( orders_fact[customer_unique_id] ),
+            "@orders", CALCULATE ( COUNTROWS ( orders_fact ) )
+        )
+    RETURN
+        DIVIDE (
+            COUNTROWS ( FILTER ( CustomerOrders, [@orders] > 1 ) ),
+            COUNTROWS ( CustomerOrders )
+        )
+    // 3.0%
+
+// ---- Supporting measures used on the report pages ----
+
+Customers =
+    DISTINCTCOUNT ( orders_fact[customer_unique_id] )
+    // 93,104
+
+Avg Delivery Days =
+    AVERAGE ( orders_fact[delivery_days] )
+    // 12.5
+
+Low Review % =
+    // Share of reviewed orders scoring 1 or 2 stars.
+    DIVIDE (
+        CALCULATE ( COUNTROWS ( orders_fact ), orders_fact[review_score] <= 2 ),
+        CALCULATE ( COUNTROWS ( orders_fact ), NOT ISBLANK ( orders_fact[review_score] ) )
+    )
+
+Revenue Prior Month =
+    CALCULATE ( [Total Revenue], DATEADD ( dim_date[date], -1, MONTH ) )
+
+Revenue MoM % =
+    DIVIDE ( [Total Revenue] - [Revenue Prior Month], [Revenue Prior Month] )
