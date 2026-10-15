@@ -1,0 +1,5 @@
+payment_type,payments,pct_of_payments,payment_value,pct_of_value,avg_installments,pct_in_installments
+credit_card,74376,74.0,12063100.59,78.5,3.5,66.8
+boleto,19140,19.0,2762300.8,18.0,1.0,0.0
+voucher,5473,5.4,342294.66,2.2,1.0,0.0
+debit_card,1484,1.5,208179.39,1.4,1.0,0.0

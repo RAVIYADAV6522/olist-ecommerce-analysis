@@ -1,0 +1,13 @@
+check_name,failing_rows
+Delivered orders with no delivery date,8
+Orders delivered before they were purchased,0
+Orders approved before they were purchased,0
+Orders handed to carrier before purchase,166
+Orders with no items,775
+Orders with no payment,1
+Items where freight costs more than the item,4124
+Items with zero or negative price,0
+Products with no category,610
+Products whose category has no English name,13
+Orders with more than one review,547
+Customer IDs that belong to a repeat person,3345

@@ -25,6 +25,8 @@ The raw files are not committed. Download the zip from Kaggle and extract the CS
 data/raw/      Kaggle CSVs (not committed)
 data/clean/    Query results and cleaned extracts
 sql/           SQL query library, one business question per file
+load_data.py   Builds the SQLite database from the raw CSVs
+run_queries.py Runs the SQL library and saves each result as a CSV
 notebooks/     Data-quality and exploratory analysis notebooks
 excel/         Monthly tracker workbook
 dashboard/     Power BI report and its source tables
@@ -41,4 +43,9 @@ SQLite · Python (pandas, matplotlib) · Excel · Power BI Desktop
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+
+python load_data.py     # builds olist.db from data/raw/ (about 6 seconds)
+python run_queries.py   # runs every query in sql/ and saves results to data/clean/
 ```
+
+See [`sql/schema.md`](sql/schema.md) for the tables, how they join, and the rules every query follows.
