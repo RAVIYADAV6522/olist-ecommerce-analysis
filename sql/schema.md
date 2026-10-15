@@ -61,5 +61,10 @@ customers ──< orders ──< order_items >── products >── category_t
 | `08_cumulative_revenue.sql` | Running total and month-on-month growth | `SUM() OVER (ORDER BY ...)`, `LAG()` |
 | `09_payment_mix.sql` | Payment methods and instalment use | Percent of total with `SUM() OVER ()` |
 | `10_data_quality_checks.sql` | What is wrong in the raw data | UNION ALL, NOT EXISTS |
+| `11_freight_share_by_category.sql` | Where shipping is the biggest share of the bill | Ratio of sums, HAVING threshold |
+| `12_delivery_by_seller_state.sql` | Shipping speed and late rate by seller state | SELECT DISTINCT in a CTE, date arithmetic |
+| `13_review_by_sellers_in_order.sql` | Reviews for single- vs multi-seller orders | Two CTEs joined, COUNT DISTINCT per order |
+| `14_orders_by_weekday_hour.sql` | Orders by day of week and hour | `strftime('%w')`, `strftime('%H')`, CAST |
+| `15_worst_reviewed_categories.sql` | Categories with the most 1-star reviews | Join condition on first item, two CTEs |
 
 Run them all and save results to `data/clean/` with `python run_queries.py`.
