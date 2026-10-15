@@ -16,6 +16,24 @@
 | `category_translation` | 71 | `product_category_name` | — |
 | `geolocation` | 1,000,163 | none (many rows per zip prefix) | — |
 
+## View: `delivered_orders`
+
+One row per delivered order purchased Jan 2017 – Aug 2018 (96,211 rows, R$15.37M revenue), with the rules below already applied. The notebooks, the Excel tracker and the Power BI tables are all built from it, so every tool reports the same numbers.
+
+| Column | Meaning |
+|---|---|
+| `customer_unique_id`, `customer_city`, `customer_state` | The real customer and where they live |
+| `seller_id`, `seller_state`, `product_id`, `category` | From the order's first item (English category name, else Portuguese, else `unknown`) |
+| `purchase_timestamp`, `purchase_date`, `purchase_month` | When the order was placed |
+| `items`, `sellers` | Number of items and of distinct sellers in the order |
+| `product_value`, `freight_value`, `revenue` | Sum of item prices, of freight, and of both (R$) |
+| `payment_type`, `payment_installments` | From the order's first payment |
+| `delivered_date`, `estimated_date` | Calendar dates the order arrived and was promised |
+| `delivery_days` | Days from purchase to delivery |
+| `days_late` | Delivered date minus estimated date; negative = early |
+| `is_late` | 1 if delivered on a later day than estimated, 0 if not, blank if no delivery date (8 orders) |
+| `review_score` | Average review score for the order; blank for 643 orders with no review |
+
 ## How the tables join
 
 ```

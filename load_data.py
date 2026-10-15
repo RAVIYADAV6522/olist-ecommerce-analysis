@@ -109,6 +109,78 @@ CREATE INDEX idx_items_seller        ON order_items (seller_id);
 CREATE INDEX idx_reviews_order       ON reviews (order_id);
 CREATE INDEX idx_customers_unique    ON customers (customer_unique_id);
 CREATE INDEX idx_geolocation_zip     ON geolocation (geolocation_zip_code_prefix);
+
+-- One row per delivered order in the analysis window (Jan 2017 – Aug 2018), with
+-- everything the notebooks, Excel tracker and Power BI dashboard need. The rules
+-- behind each column are in sql/schema.md.
+CREATE VIEW delivered_orders AS
+WITH item_totals AS (
+    SELECT
+        order_id,
+        COUNT(*)                        AS items,
+        COUNT(DISTINCT seller_id)       AS sellers,
+        SUM(price)                      AS product_value,
+        SUM(freight_value)              AS freight_value,
+        SUM(price + freight_value)      AS revenue
+    FROM order_items
+    GROUP BY order_id
+),
+first_item AS (
+    SELECT order_id, product_id, seller_id
+    FROM order_items
+    WHERE order_item_id = 1
+),
+first_payment AS (
+    SELECT p.order_id, p.payment_type, p.payment_installments
+    FROM payments AS p
+    WHERE p.payment_sequential = (SELECT MIN(payment_sequential) FROM payments WHERE order_id = p.order_id)
+),
+order_scores AS (
+    SELECT order_id, AVG(review_score) AS review_score
+    FROM reviews
+    GROUP BY order_id
+)
+SELECT
+    o.order_id,
+    c.customer_unique_id,
+    c.customer_city,
+    c.customer_state,
+    fi.seller_id,
+    s.seller_state,
+    fi.product_id,
+    COALESCE(t.product_category_name_english, p.product_category_name, 'unknown') AS category,
+    o.order_purchase_timestamp                                                    AS purchase_timestamp,
+    date(o.order_purchase_timestamp)                                              AS purchase_date,
+    strftime('%Y-%m', o.order_purchase_timestamp)                                 AS purchase_month,
+    it.items,
+    it.sellers,
+    ROUND(it.product_value, 2)                                                    AS product_value,
+    ROUND(it.freight_value, 2)                                                    AS freight_value,
+    ROUND(it.revenue, 2)                                                          AS revenue,
+    fp.payment_type,
+    fp.payment_installments,
+    date(o.order_delivered_customer_date)                                         AS delivered_date,
+    date(o.order_estimated_delivery_date)                                         AS estimated_date,
+    ROUND(julianday(o.order_delivered_customer_date)
+        - julianday(o.order_purchase_timestamp), 1)                               AS delivery_days,
+    CAST(julianday(date(o.order_delivered_customer_date))
+        - julianday(date(o.order_estimated_delivery_date)) AS INTEGER)            AS days_late,
+    CASE WHEN o.order_delivered_customer_date IS NULL THEN NULL
+         WHEN date(o.order_delivered_customer_date)
+            > date(o.order_estimated_delivery_date) THEN 1 ELSE 0 END             AS is_late,
+    sc.review_score
+FROM orders AS o
+JOIN customers AS c                 ON c.customer_id = o.customer_id
+JOIN item_totals AS it              ON it.order_id = o.order_id
+JOIN first_item AS fi               ON fi.order_id = o.order_id
+JOIN sellers AS s                   ON s.seller_id = fi.seller_id
+JOIN products AS p                  ON p.product_id = fi.product_id
+LEFT JOIN category_translation AS t ON t.product_category_name = p.product_category_name
+LEFT JOIN first_payment AS fp       ON fp.order_id = o.order_id
+LEFT JOIN order_scores AS sc        ON sc.order_id = o.order_id
+WHERE o.order_status = 'delivered'
+  AND o.order_purchase_timestamp >= '2017-01-01'
+  AND o.order_purchase_timestamp <  '2018-09-01';
 """
 
 # Load order matters: parent tables before the tables that reference them.
