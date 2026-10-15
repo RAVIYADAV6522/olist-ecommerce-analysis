@@ -1,0 +1,16 @@
+# Raw Kaggle data is too big for GitHub — download it yourself (see README)
+data/raw/*
+!data/raw/.gitkeep
+
+# Database built by load_data.py
+*.db
+*.sqlite
+
+# Python
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+~$*.xlsx
